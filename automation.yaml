@@ -1,0 +1,16 @@
+- id: '1662671430272'
+  alias: Automatische Übertragung der PV Werte an IDM WP
+  description: Automatische Übertragung der Photovoltaik Werte an die IDM Wärmepumpe.
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.pv_aktuelle_produktion
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 20
+  condition: []
+  action:
+  - service: script.idm_update_pv_values
+    data: {}
+  mode: single
