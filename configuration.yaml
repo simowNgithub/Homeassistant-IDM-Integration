@@ -1,0 +1,206 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+  
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Für die iOS Themes
+frontend:
+  themes: !include_dir_merge_named themes
+
+template:
+  - sensor:
+      - name: "PV aktuelle Produktion"
+        unique_id: "pv_aktuelle_produktion"
+        unit_of_measurement: "kW"
+        state: "{{ states('sensor.sma_inverter_watts') | float(0) / 1000 | float }}"
+        #state: >
+        # {% if states('sensor.sma_inverter_watts') == 'unavailable' %}
+        #   0.0
+        # {% else %}
+        #   {{ states('sensor.sma_inverter_watts')|float / 1000|float }}
+        # {% endif %}
+        state_class: measurement
+        device_class: power
+        icon: mdi:solar-power
+      - name: "WP aktueller PV Überschuss"
+        unique_id: "idm_aktueller_pv_ueberschuss"
+        unit_of_measurement: "kW"
+        state: >
+         {% if ( states('sensor.pv_aktuelle_produktion')|float(3) )|round(2) == 0|float %}
+           0.0
+         {% elif (
+                     states('sensor.stromzahler_verbrauch')|float(3)
+                   - states('sensor.wp_verbrauch')|float(2)
+                   + 0.2|float(2)
+                 )|round(2) > 0|float
+         %}
+           0.0
+         {% else %}
+           {{ (
+                (
+                    states('sensor.stromzahler_verbrauch')|float(3)
+                    - states('sensor.wp_verbrauch')|float(2)
+                    + 0.2|float(2)
+                ) * (-1)
+              ) |round(2) }}
+         {% endif %}
+        state_class: measurement
+        device_class: power
+        icon: mdi:solar-power
+      - name: "PV gesamte Produktion"
+        unique_id: "pv_gesamte_produktion"
+        unit_of_measurement: "kWh"
+        state: "{{ ( states('sensor.sma_inverter_watthours')|float(0) / 1000|float ) | round(0)  }}"
+        state_class: total_increasing
+        device_class: energy
+        icon: mdi:solar-panel
+      - name: "WP Verbrauch"
+        unique_id: "idm_aktueller_verbrauch"
+        state: >
+         {% if states('sensor.idm_Leistungsaufnahme') == 'unavailable' %}
+           0.0
+         {% else %}
+          {{ states('sensor.idm_Leistungsaufnahme')|float(2) }}
+         {% endif %}
+        #unit_of_measurement: "kWh"
+        #device_class: energy
+        #state_class: total_increasing
+        state_class: measurement
+        unit_of_measurement: kW
+        device_class: power
+      - name: "Stromzähler Verbrauch"
+        unique_id: "stromzaehler_verbrauch"
+        state: >
+          {{ (
+                (
+                      states('sensor.stromzaehler_channel_a_power') | float(1)
+                    + states('sensor.stromzaehler_channel_b_power') | float(1)
+                    + states('sensor.stromzaehler_channel_c_power') | float(1)
+                )
+                / 1000 | float(0)
+              ) | round(2)
+          }}
+        state_class: measurement
+        unit_of_measurement: kW
+        device_class: power
+      - name: "Stromzähler Einspeisung"
+        unique_id: "stromzaehler_energy_returned"
+        state: >
+          {{ (
+                (
+                      states('sensor.stromzaehler_channel_a_energy_returned') | float(2)
+                    + states('sensor.stromzaehler_channel_b_energy_returned') | float(2)
+                    + states('sensor.stromzaehler_channel_c_energy_returned') | float(2)
+                )
+              ) | round(2)
+          }}
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        device_class: energy
+      - name: "Stromzähler Netzbezug"
+        unique_id: "stromzaehler_energy"
+        state: >
+          {{ (
+                (
+                      states('sensor.stromzaehler_channel_a_energy') | float(2)
+                    + states('sensor.stromzaehler_channel_b_energy') | float(2)
+                    + states('sensor.stromzaehler_channel_c_energy') | float(2)
+                )
+              ) | round(2)
+          }}
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        device_class: energy
+    
+modbus:
+  - name: "idm_wp"
+    type: tcp
+    host: 10.10.10.94
+    port: 502
+    sensors:
+      - name: idm_Aussentemperatur
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: °C
+        address: 1000
+        data_type: float32
+        count: 2
+        scan_interval: 10
+        precision: 1
+        swap: word
+      - name: idm_Leistungsaufnahme
+        slave: 1
+        scale: 1
+        offset: 0
+        address: 4122
+        data_type: float32
+        count: 2
+        scan_interval: 15
+        precision: 1
+        swap: word
+        unit_of_measurement: "kW"
+        device_class: power
+        state_class: measurement
+      - name: idm_AktuellerPhotovoltaikUeberschuss
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: kW
+        address: 74
+        data_type: float32
+        count: 2
+        scan_interval: 15
+        precision: 1
+        swap: word
+      - name: idm_AktuellePhotovoltaikProduktion
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: kW
+        address: 78
+        data_type: float32
+        count: 2
+        scan_interval: 15
+        precision: 1
+        swap: word
+      - name: idm_Vorlauftemperatur
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: °C
+        address: 1350
+        data_type: float32
+        count: 2
+        scan_interval: 30
+        precision: 1
+        swap: word
+      - name: idm_Waermespeichertemperatur
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: °C
+        address: 1008
+        data_type: float32
+        count: 2
+        scan_interval: 30
+        precision: 1
+        swap: word
+      - name: idm_Warmwasserzapftemperatur
+        slave: 1
+        scale: 1
+        offset: 0
+        unit_of_measurement: °C
+        address: 1030
+        data_type: float32
+        count: 2
+        scan_interval: 30
+        precision: 1
+        swap: word
+        
