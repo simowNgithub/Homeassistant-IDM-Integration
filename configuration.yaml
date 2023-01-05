@@ -9,22 +9,25 @@ automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-# Für die iOS Themes
-frontend:
-  themes: !include_dir_merge_named themes
-
+      
+# template sensors
 template:
   - sensor:
       - name: "PV aktuelle Produktion"
         unique_id: "pv_aktuelle_produktion"
         unit_of_measurement: "kW"
-        state: "{{ states('sensor.sma_inverter_watts') | float(0) / 1000 | float }}"
-        #state: >
-        # {% if states('sensor.sma_inverter_watts') == 'unavailable' %}
-        #   0.0
-        # {% else %}
-        #   {{ states('sensor.sma_inverter_watts')|float / 1000|float }}
-        # {% endif %}
+         # 
+         # sma_aktuelle_leistung liefert Nachts immer den Wert 2147483648 (max int32...) bei keiner Leistung.
+         # keine Ahnung wieso, aber hiermit ist es abgefangen...
+         #
+        state: >
+         {% if states('sensor.sma_aktuelle_leistung') == 'unavailable' %}
+           0.0
+         {% elif states('sensor.sma_aktuelle_leistung')|int == 2147483648|int %}
+           0.0
+         {% else %}
+           {{ states('sensor.sma_aktuelle_leistung')|float / 1000|float }}
+         {% endif %}
         state_class: measurement
         device_class: power
         icon: mdi:solar-power
@@ -37,7 +40,6 @@ template:
          {% elif (
                      states('sensor.stromzahler_verbrauch')|float(3)
                    - states('sensor.wp_verbrauch')|float(2)
-                   + 0.2|float(2)
                  )|round(2) > 0|float
          %}
            0.0
@@ -46,7 +48,6 @@ template:
                 (
                     states('sensor.stromzahler_verbrauch')|float(3)
                     - states('sensor.wp_verbrauch')|float(2)
-                    + 0.2|float(2)
                 ) * (-1)
               ) |round(2) }}
          {% endif %}
@@ -56,7 +57,14 @@ template:
       - name: "PV gesamte Produktion"
         unique_id: "pv_gesamte_produktion"
         unit_of_measurement: "kWh"
-        state: "{{ ( states('sensor.sma_inverter_watthours')|float(0) / 1000|float ) | round(0)  }}"
+        state: "{{ ( states('sensor.sma_gesamte_produktion')|float(0) / 1000|float ) | round(2)  }}"
+        state_class: total_increasing
+        device_class: energy
+        icon: mdi:solar-panel
+      - name: "PV heutige Produktion"
+        unique_id: "pv_heutige_produktion"
+        unit_of_measurement: "kWh"
+        state: "{{ ( states('sensor.sma_heutige_produktion')|float(0) / 1000|float ) | round(2)  }}"
         state_class: total_increasing
         device_class: energy
         icon: mdi:solar-panel
@@ -68,12 +76,20 @@ template:
          {% else %}
           {{ states('sensor.idm_Leistungsaufnahme')|float(2) }}
          {% endif %}
-        #unit_of_measurement: "kWh"
-        #device_class: energy
-        #state_class: total_increasing
         state_class: measurement
         unit_of_measurement: kW
         device_class: power
+      - name: "Stromzähler gesamter Verbrauch"
+        unique_id: "stromzaehler_gesamter_verbrauch"
+        state: >
+          {{
+            (
+              states('sensor.stromzahler_netzbezug')|float(0) + 3780.5|float
+            ) | round(0)
+          }}
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        device_class: energy
       - name: "Stromzähler Verbrauch"
         unique_id: "stromzaehler_verbrauch"
         state: >
@@ -117,14 +133,68 @@ template:
         state_class: total_increasing
         unit_of_measurement: kWh
         device_class: energy
-    
+
+#
+# Wichtiger Hinweis:
+# Entity-Ids werden mit der Property "name" gleichgesetzt
+# Verwendet man " " (Leerzeichen) in der Property "name" werden diese für die Entity-Id mit "_" ersetzt von Homeassistant
+#
 modbus:
+  - name: "sma"
+    type: tcp
+    host: 10.10.10.61
+    port: 502
+    sensors:
+      - name: "sma_aktuelle_leistung"
+        unit_of_measurement: W
+        slave: 3
+        address: 30775
+        count: 2
+        data_type: uint32
+      - name: "sma_heutige_produktion"
+        unit_of_measurement: Wh
+        state_class: total_increasing
+        device_class: energy
+        slave: 3
+        address: 30517
+        count: 4
+        data_type: int64
+      - name: "sma_gesamte_produktion"
+        unit_of_measurement: Wh
+        slave: 3
+        address: 30513
+        count: 4
+        data_type: int64
+        #- name: SMA Volt
+        #  unit_of_measurement: V
+        #  slave: 3
+        #  address: 30783
+        #  count: 2
+        #  data_type: int32
+        #- name: SMA Power L1 AC
+        #  unit_of_measurement: W
+        #  slave: 3
+        #  address: 30777
+        #  count: 2
+        #  data_type: uint32
+        #- name: SMA Power L2 AC
+        #  unit_of_measurement: W
+        #  slave: 3
+        #  address: 30779
+        #  count: 2
+        #  data_type: uint32
+        #- name: SMA Power L3 AC
+        #  unit_of_measurement: W
+        #  slave: 3
+        #  address: 30781
+        #  count: 2
+        #  data_type: uint32
   - name: "idm_wp"
     type: tcp
     host: 10.10.10.94
     port: 502
     sensors:
-      - name: idm_Aussentemperatur
+      - name: "idm_Aussentemperatur"
         slave: 1
         scale: 1
         offset: 0
@@ -135,7 +205,7 @@ modbus:
         scan_interval: 10
         precision: 1
         swap: word
-      - name: idm_Leistungsaufnahme
+      - name: "idm_Leistungsaufnahme"
         slave: 1
         scale: 1
         offset: 0
@@ -148,7 +218,7 @@ modbus:
         unit_of_measurement: "kW"
         device_class: power
         state_class: measurement
-      - name: idm_AktuellerPhotovoltaikUeberschuss
+      - name: "idm_AktuellerPhotovoltaikUeberschuss"
         slave: 1
         scale: 1
         offset: 0
@@ -159,7 +229,7 @@ modbus:
         scan_interval: 15
         precision: 1
         swap: word
-      - name: idm_AktuellePhotovoltaikProduktion
+      - name: "idm_AktuellePhotovoltaikProduktion"
         slave: 1
         scale: 1
         offset: 0
@@ -170,7 +240,7 @@ modbus:
         scan_interval: 15
         precision: 1
         swap: word
-      - name: idm_Vorlauftemperatur
+      - name: "idm_Vorlauftemperatur"
         slave: 1
         scale: 1
         offset: 0
@@ -181,7 +251,7 @@ modbus:
         scan_interval: 30
         precision: 1
         swap: word
-      - name: idm_Waermespeichertemperatur
+      - name: "idm_Waermespeichertemperatur"
         slave: 1
         scale: 1
         offset: 0
@@ -192,7 +262,7 @@ modbus:
         scan_interval: 30
         precision: 1
         swap: word
-      - name: idm_Warmwasserzapftemperatur
+      - name: "idm_Warmwasserzapftemperatur"
         slave: 1
         scale: 1
         offset: 0
@@ -203,4 +273,4 @@ modbus:
         scan_interval: 30
         precision: 1
         swap: word
-        
+
