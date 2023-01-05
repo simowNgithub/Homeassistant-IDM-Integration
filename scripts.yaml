@@ -1,31 +1,22 @@
 idm_update_pv_values:
   alias: Update Photovoltaik values to IDM Headpump
   sequence:
-    #- service: system_log.write
-    #  data_template:
-    #    message: "Write following value to IDM Headpump Aktuelle Produktion: {{states('sensor.pv_aktuelle_produktion') | float(0)}} Aktueller Überschuss: {{states('sensor.pv_aktueller_uberschuss') | float(0)}}"
-    #    level: warning
-    - service: modbus.write_register
-      data:
-        hub: idm_wp
-        unit: 1
-        address: 74
-      data_template:
-      #Dient zur Konvertierung in einen float32 basierend auf der Variable "pv_aktueller_uberschuss"
-        value: >
-            [ {{ '0x%x' % unpack(pack(states('sensor.wp_aktueller_pv_uberschuss') |float(0),
-            ">f"), ">h", offset=2) | abs }}, {{ '0x%04x' %
-            unpack(pack(states('sensor.wp_aktueller_pv_uberschuss')|float(0), ">f"), ">h")|abs }}
-            ] 
-    - service: modbus.write_register
-      data:
-        hub: idm_wp
-        unit: 1
-        address: 78
-      data_template:
-      #Dient zur Konvertierung in einen float32 basierend auf der Variable "pv_aktuelle_produktion"
-        value: >
-            [ {{ '0x%x' % unpack(pack(states('sensor.pv_aktuelle_produktion') |float(0),
-            ">f"), ">h", offset=2) | abs }}, {{ '0x%04x' %
-            unpack(pack(states('sensor.pv_aktuelle_produktion')|float(0), ">f"), ">h")|abs }}
-            ]
+  - service: modbus.write_register
+    data:
+      hub: idm_wp
+      unit: 1
+      address: 74
+    data_template:
+      value: '[ {{ ''0x%x'' % unpack(pack(states(''sensor.wp_aktueller_pv_uberschuss'')
+        |float(0), ">f"), ">h", offset=2) | abs }}, {{ ''0x%04x'' % unpack(pack(states(''sensor.wp_aktueller_pv_uberschuss'')|float(0),
+        ">f"), ">h")|abs }} ] '
+  - service: modbus.write_register
+    data:
+      hub: idm_wp
+      unit: 1
+      address: 78
+    data_template:
+      value: '[ {{ ''0x%x'' % unpack(pack(states(''sensor.pv_aktuelle_produktion'')
+        |float(0), ">f"), ">h", offset=2) | abs }}, {{ ''0x%04x'' % unpack(pack(states(''sensor.pv_aktuelle_produktion'')|float(0),
+        ">f"), ">h")|abs }} ]'
+  mode: single
