@@ -2,7 +2,7 @@
   alias: Automatische Übertragung der PV Werte an IDM WP
   description: Automatische Übertragung der Photovoltaik Werte an die IDM Wärmepumpe.
   trigger:
-  - minutes: /2
+  - minutes: /3
     platform: time_pattern
   condition:
   - '{{ not is_state(''sensor.wp_aktueller_pv_uberschuss'',''sensor.idm_aktuellerphotovoltaikueberschuss'')
