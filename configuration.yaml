@@ -165,30 +165,6 @@ modbus:
         address: 30513
         count: 4
         data_type: int64
-        #- name: SMA Volt
-        #  unit_of_measurement: V
-        #  slave: 3
-        #  address: 30783
-        #  count: 2
-        #  data_type: int32
-        #- name: SMA Power L1 AC
-        #  unit_of_measurement: W
-        #  slave: 3
-        #  address: 30777
-        #  count: 2
-        #  data_type: uint32
-        #- name: SMA Power L2 AC
-        #  unit_of_measurement: W
-        #  slave: 3
-        #  address: 30779
-        #  count: 2
-        #  data_type: uint32
-        #- name: SMA Power L3 AC
-        #  unit_of_measurement: W
-        #  slave: 3
-        #  address: 30781
-        #  count: 2
-        #  data_type: uint32
   - name: "idm_wp"
     type: tcp
     host: 10.10.10.94
@@ -202,7 +178,7 @@ modbus:
         address: 1000
         data_type: float32
         count: 2
-        scan_interval: 10
+        scan_interval: 300
         precision: 1
         swap: word
       - name: "idm_Leistungsaufnahme"
@@ -212,7 +188,7 @@ modbus:
         address: 4122
         data_type: float32
         count: 2
-        scan_interval: 15
+        scan_interval: 300
         precision: 1
         swap: word
         unit_of_measurement: "kW"
@@ -226,7 +202,7 @@ modbus:
         address: 74
         data_type: float32
         count: 2
-        scan_interval: 15
+        scan_interval: 300
         precision: 1
         swap: word
       - name: "idm_AktuellePhotovoltaikProduktion"
@@ -237,7 +213,7 @@ modbus:
         address: 78
         data_type: float32
         count: 2
-        scan_interval: 15
+        scan_interval: 300
         precision: 1
         swap: word
       - name: "idm_Vorlauftemperatur"
@@ -248,7 +224,7 @@ modbus:
         address: 1350
         data_type: float32
         count: 2
-        scan_interval: 30
+        scan_interval: 300
         precision: 1
         swap: word
       - name: "idm_Waermespeichertemperatur"
@@ -259,7 +235,7 @@ modbus:
         address: 1008
         data_type: float32
         count: 2
-        scan_interval: 30
+        scan_interval: 300
         precision: 1
         swap: word
       - name: "idm_Warmwasserzapftemperatur"
@@ -270,7 +246,7 @@ modbus:
         address: 1030
         data_type: float32
         count: 2
-        scan_interval: 30
+        scan_interval: 300
         precision: 1
         swap: word
 
