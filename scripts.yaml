@@ -12,7 +12,7 @@ idm_update_pv_values:
           {{ unpack(pack(states("sensor.wp_aktueller_pv_uberschuss")|float, ">f"), ">H") }} ]
   - service: modbus.write_register
     data:
-      hub: idm_heatpump
+      hub: idm_wp
       unit: 1
       address: 78
     data_template:
