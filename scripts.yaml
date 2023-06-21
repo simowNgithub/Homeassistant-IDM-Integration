@@ -7,16 +7,16 @@ idm_update_pv_values:
       unit: 1
       address: 74
     data_template:
-      value: '[ {{ ''0x%x'' % unpack(pack(states(''sensor.wp_aktueller_pv_uberschuss'')
-        |float(0), ">f"), ">h", offset=2) | abs }}, {{ ''0x%04x'' % unpack(pack(states(''sensor.wp_aktueller_pv_uberschuss'')|float(0),
-        ">f"), ">h")|abs }} ] '
+      value: >
+        [ {{ unpack(pack(states("sensor.wp_aktueller_pv_uberschuss")|float, ">f"), ">H", offset=2) }}, 
+          {{ unpack(pack(states("sensor.wp_aktueller_pv_uberschuss")|float, ">f"), ">H") }} ]
   - service: modbus.write_register
     data:
-      hub: idm_wp
+      hub: idm_heatpump
       unit: 1
       address: 78
     data_template:
-      value: '[ {{ ''0x%x'' % unpack(pack(states(''sensor.pv_aktuelle_produktion'')
-        |float(0), ">f"), ">h", offset=2) | abs }}, {{ ''0x%04x'' % unpack(pack(states(''sensor.pv_aktuelle_produktion'')|float(0),
-        ">f"), ">h")|abs }} ]'
+      value: >
+        [ {{ unpack(pack(states("sensor.pv_aktuelle_produktion")|float, ">f"), ">H", offset=2) }}, 
+          {{ unpack(pack(states("sensor.pv_aktuelle_produktion")|float, ">f"), ">H") }} ]
   mode: single
