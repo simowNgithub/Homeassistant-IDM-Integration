@@ -165,7 +165,7 @@ modbus:
         address: 30513
         count: 4
         data_type: int64
-  - name: "idm_wp"
+  - name: "idm_heatpump"
     type: tcp
     host: 10.10.10.94
     port: 502
