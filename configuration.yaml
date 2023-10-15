@@ -149,7 +149,6 @@ modbus:
         unit_of_measurement: W
         slave: 3
         address: 30775
-        count: 2
         data_type: uint32
       - name: "sma_heutige_produktion"
         unit_of_measurement: Wh
@@ -157,13 +156,11 @@ modbus:
         device_class: energy
         slave: 3
         address: 30517
-        count: 4
         data_type: int64
       - name: "sma_gesamte_produktion"
         unit_of_measurement: Wh
         slave: 3
         address: 30513
-        count: 4
         data_type: int64
   - name: "idm_heatpump"
     type: tcp
@@ -177,7 +174,6 @@ modbus:
         unit_of_measurement: °C
         address: 1000
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -187,7 +183,6 @@ modbus:
         offset: 0
         address: 4122
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -201,7 +196,6 @@ modbus:
         unit_of_measurement: kW
         address: 74
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -212,7 +206,6 @@ modbus:
         unit_of_measurement: kW
         address: 78
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -223,7 +216,6 @@ modbus:
         unit_of_measurement: °C
         address: 1350
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -234,7 +226,6 @@ modbus:
         unit_of_measurement: °C
         address: 1008
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
@@ -245,7 +236,6 @@ modbus:
         unit_of_measurement: °C
         address: 1030
         data_type: float32
-        count: 2
         scan_interval: 300
         precision: 1
         swap: word
